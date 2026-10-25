@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Instantly hide MAL's old layout to prevent flashing */
+body.page-common {
+  background-color: #0f1117 !important;
+}
+#myanimelist, iframe {
+  display: none !important;
+}

@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "MAL Modern UI",
+  "version": "1.0.0",
+  "description": "A modern, minimalist dark theme overhaul for MyAnimeList.",
+  "content_scripts": [
+    {
+      "matches": ["*://myanimelist.net/*"],
+      "js": ["src/main.tsx"],
+      "run_at": "document_start"
+    }
+  ]
+}
