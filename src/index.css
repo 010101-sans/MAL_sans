@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Light Mode Defaults */
   :root {
     --color-bg: #f8fafc;
     --color-surface: #ffffff;
@@ -12,7 +11,6 @@
     --color-muted: #64748b;
   }
 
-  /* Dark Mode Overrides */
   .dark {
     --color-bg: #0f172a;
     --color-surface: #1e293b;
@@ -22,13 +20,15 @@
   }
 }
 
-/* Instantly hide MAL's legacy UI and apply the base theme */
-body.page-common {
+/* Bulletproof wipe of legacy MAL elements */
+body > :not(#mal-modern-root) {
+  display: none !important;
+}
+
+body {
   background-color: var(--color-bg) !important;
   color: var(--color-text) !important;
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-#myanimelist, iframe {
-  display: none !important;
+  margin: 0;
+  padding: 0;
 }
