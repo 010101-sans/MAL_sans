@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Search, Bell, User, Star, PlayCircle, BookOpen } from 'lucide-react';
+import { Sun, Moon, Search, Bell, User, Star, PlayCircle, BookOpen, Newspaper } from 'lucide-react';
 import { scrapeMalHomepage, type MediaItem } from './utils/scraper';
+
+const NAV_LINKS = ['Anime', 'Manga', 'Community', 'Industry', 'Watch', 'Read', 'Help'];
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -9,27 +11,26 @@ function App() {
     seasonalAnime: MediaItem[];
     topAiring: MediaItem[];
     myUpdates: MediaItem[];
+    episodes: MediaItem[];
+    news: MediaItem[];
   } | null>(null);
 
   useEffect(() => {
-    // Apply dark mode
     const root = document.getElementById('mal-modern-root');
     isDark ? root?.classList.add('dark') : root?.classList.remove('dark');
   }, [isDark]);
 
   useEffect(() => {
-    // Instantly scrape the hidden MAL DOM when React mounts
-    const data = scrapeMalHomepage();
-    setMalData(data);
+    setMalData(scrapeMalHomepage());
   }, []);
 
-  if (!malData) return null; // Prevent flash before scrape
+  if (!malData) return null;
 
   return (
-    <div className="min-h-screen bg-mal-bg text-mal-text transition-colors duration-300 font-sans pb-12">
+    <div className="min-h-screen bg-mal-bg text-mal-text transition-colors duration-300 font-sans">
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-mal-surface/70 border-b border-mal-border shadow-sm">
+      {/* Top Header */}
+      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-mal-surface/80 border-b border-mal-border shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer">
             <div className="w-8 h-8 bg-mal-accent rounded-xl flex items-center justify-center text-white font-bold shadow-glow">M</div>
@@ -55,11 +56,19 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* Navigation Tabs */}
+      <nav className="bg-mal-surface border-b border-mal-border hidden md:block">
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center gap-8 text-sm font-bold text-mal-muted uppercase tracking-wider">
+          {NAV_LINKS.map(link => (
+            <a href={`/${link.toLowerCase()}`} key={link} className="hover:text-mal-accent transition-colors">{link}</a>
+          ))}
+        </div>
+      </nav>
       
-      {/* Bento Box Dashboard Grid */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         
-        {/* Spotlight Banner (Using the first Seasonal Anime as a Hero) */}
+        {/* Spotlight Banner */}
         {malData.seasonalAnime[0] && (
           <a href={malData.seasonalAnime[0].url} className="block w-full h-72 bg-mal-surface border border-mal-border rounded-2xl mb-6 shadow-soft relative overflow-hidden group cursor-pointer">
             <img src={malData.seasonalAnime[0].image.replace('160x220', '800x1200')} alt="Spotlight" className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" />
@@ -83,29 +92,70 @@ function App() {
                    <span className="w-2 h-6 bg-mal-accent rounded-full"></span>
                    Fall 2026 Anime
                  </h2>
-                 <a href="/anime/season" className="text-sm font-semibold text-mal-accent hover:underline">View All</a>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
                 {malData.seasonalAnime.slice(1, 9).map((anime) => (
                   <a href={anime.url} key={anime.id} className="group flex flex-col gap-2">
                     <div className="aspect-[2/3] bg-mal-bg rounded-xl border border-mal-border overflow-hidden relative shadow-sm">
                       <img src={anime.image} alt={anime.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                         <PlayCircle className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
-                      </div>
                     </div>
                     <h3 className="text-sm font-bold leading-tight line-clamp-2 group-hover:text-mal-accent transition-colors">{anime.title}</h3>
                   </a>
                 ))}
               </div>
             </section>
+
+            {/* Latest Episodes Bento */}
+            {malData.episodes.length > 0 && (
+              <section className="bg-mal-surface border border-mal-border rounded-2xl p-6 shadow-soft">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <PlayCircle className="w-5 h-5 text-mal-accent" />
+                  Latest Episodes
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+                  {malData.episodes.slice(0, 4).map((ep) => (
+                    <a href={ep.url} key={ep.id} className="group flex flex-col gap-2">
+                      <div className="aspect-[2/3] bg-mal-bg rounded-xl border border-mal-border overflow-hidden relative shadow-sm">
+                        <img src={ep.image} alt={ep.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <PlayCircle className="w-12 h-12 text-white/90 shadow-lg" />
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-bold leading-tight line-clamp-1 group-hover:text-mal-accent transition-colors">{ep.title}</h3>
+                      <p className="text-xs font-semibold text-mal-muted">{ep.meta}</p>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* News Bento */}
+            {malData.news.length > 0 && (
+              <section className="bg-mal-surface border border-mal-border rounded-2xl p-6 shadow-soft">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <Newspaper className="w-5 h-5 text-mal-accent" />
+                  Anime & Manga News
+                </h2>
+                <div className="space-y-6">
+                  {malData.news.slice(0, 3).map((item) => (
+                    <a href={item.url} key={item.id} className="flex gap-4 group">
+                      <img src={item.image} alt="News" className="w-24 h-24 object-cover rounded-xl border border-mal-border shrink-0 shadow-sm" />
+                      <div>
+                        <h3 className="text-base font-bold group-hover:text-mal-accent transition-colors line-clamp-2 mb-1">{item.title}</h3>
+                        <p className="text-sm text-mal-muted line-clamp-2 leading-relaxed">{item.text}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
             
           </div>
 
           {/* Right Sidebar (4 Columns) */}
           <aside className="lg:col-span-4 space-y-6">
             
-            {/* My List Updates Bento */}
+            {/* My List Updates */}
             <section className="bg-mal-surface border border-mal-border rounded-2xl p-6 shadow-soft">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                  <BookOpen className="w-5 h-5 text-mal-accent" />
@@ -126,7 +176,7 @@ function App() {
               </div>
             </section>
 
-            {/* Top Airing Bento */}
+            {/* Top Airing Globally */}
             <section className="bg-mal-surface border border-mal-border rounded-2xl p-6 shadow-soft">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
@@ -152,6 +202,25 @@ function App() {
           </aside>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-mal-surface border-t border-mal-border pt-12 pb-8 mt-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6">
+          <div className="flex flex-wrap justify-center gap-6 text-mal-text text-sm font-semibold">
+             <a href="/" className="hover:text-mal-accent transition-colors">Home</a>
+             <a href="/about.php" className="hover:text-mal-accent transition-colors">About</a>
+             <a href="/pressroom" className="hover:text-mal-accent transition-colors">Press Room</a>
+             <a href="/about.php?go=contact" className="hover:text-mal-accent transition-colors">Support</a>
+             <a href="/advertising" className="hover:text-mal-accent transition-colors">Advertising</a>
+             <a href="/forum/?topicid=515949" className="hover:text-mal-accent transition-colors">FAQ</a>
+             <a href="/about/terms_of_use" className="hover:text-mal-accent transition-colors">Terms</a>
+             <a href="/about/privacy_policy" className="hover:text-mal-accent transition-colors">Privacy</a>
+          </div>
+          <div className="w-12 h-1 bg-mal-border rounded-full"></div>
+          <p className="text-xs text-mal-muted">MyAnimeList.net is a property of MyAnimeList Co., Ltd. ©2026 All Rights Reserved.</p>
+        </div>
+      </footer>
+
     </div>
   );
 }

@@ -5,19 +5,18 @@ export interface MediaItem {
   url: string;
   meta?: string;
   rank?: string;
+  text?: string;
 }
 
 export const scrapeMalHomepage = () => {
   const getImgUrl = (el: Element | null) => {
     if (!el) return '';
-    // MAL uses lazy loading, so we must grab data-src first
     return el.getAttribute('data-src') || el.getAttribute('src') || '';
   };
 
-  // 1. Scrape User Stats & Info
   const username = document.querySelector('.header-profile-link')?.textContent?.trim() || 'User';
   
-  // 2. Scrape Seasonal Anime
+  // Seasonal Anime
   const seasonalNodes = document.querySelectorAll('.widget.seasonal .btn-anime');
   const seasonalAnime: MediaItem[] = Array.from(seasonalNodes).map((node, i) => ({
     id: `seasonal-${i}`,
@@ -26,11 +25,10 @@ export const scrapeMalHomepage = () => {
     url: node.querySelector('a.link')?.getAttribute('href') || '#',
   }));
 
-  // 3. Scrape Top Airing
+  // Top Airing
   const topAiringNodes = document.querySelectorAll('.widget.airing_ranking .ranking-unit');
   const topAiring: MediaItem[] = Array.from(topAiringNodes).map((node, i) => {
     const infoText = node.querySelector('.data .info')?.textContent?.trim() || '';
-    // Extracts "scored 9.04" from "ONA, 0 eps, scored 9.04"
     const scoreMatch = infoText.match(/scored ([\d.]+)/); 
     
     return {
@@ -43,11 +41,10 @@ export const scrapeMalHomepage = () => {
     };
   });
 
-  // 4. Scrape User's Last List Updates
+  // User's Last List Updates
   const updateNodes = document.querySelectorAll('.widget.my_list_updates .item');
   const myUpdates: MediaItem[] = Array.from(updateNodes).map((node, i) => {
     const titleEl = node.querySelector('.info p:first-child a.fw-b');
-    // Extracts "Watching at 1 of 101" etc.
     const statusEl = node.querySelector('.info p:nth-child(2)'); 
     
     return {
@@ -59,5 +56,29 @@ export const scrapeMalHomepage = () => {
     };
   });
 
-  return { username, seasonalAnime, topAiring, myUpdates };
+  // Latest Episodes
+  const epNodes = document.querySelectorAll('.widget.latest_episode_video .btn-anime');
+  const episodes: MediaItem[] = Array.from(epNodes).map((node, i) => {
+    const titleNode = node.querySelector('h3 a');
+    const epLink = node.querySelector('.title a');
+    return {
+      id: `ep-${i}`,
+      title: titleNode?.textContent?.trim() || '',
+      image: getImgUrl(node.querySelector('img')),
+      url: epLink?.getAttribute('href') || '#',
+      meta: epLink?.textContent?.trim() || 'Watch'
+    };
+  });
+
+  // Anime News
+  const newsNodes = document.querySelectorAll('.widget.news .news-unit');
+  const news: MediaItem[] = Array.from(newsNodes).map((node, i) => ({
+    id: `news-${i}`,
+    title: node.querySelector('.title a')?.textContent?.trim() || '',
+    image: getImgUrl(node.querySelector('img')),
+    url: node.querySelector('.title a')?.getAttribute('href') || '#',
+    text: node.querySelector('.text')?.textContent?.trim() || ''
+  }));
+
+  return { username, seasonalAnime, topAiring, myUpdates, episodes, news };
 };
