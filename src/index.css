@@ -2,10 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Instantly hide MAL's old layout to prevent flashing */
-body.page-common {
-  background-color: #0f1117 !important;
+@layer base {
+  /* Light Mode Defaults */
+  :root {
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-border: #e2e8f0;
+    --color-text: #0f172a;
+    --color-muted: #64748b;
+  }
+
+  /* Dark Mode Overrides */
+  .dark {
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-text: #f8fafc;
+    --color-muted: #94a3b8;
+  }
 }
+
+/* Instantly hide MAL's legacy UI and apply the base theme */
+body.page-common {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 #myanimelist, iframe {
   display: none !important;
 }
